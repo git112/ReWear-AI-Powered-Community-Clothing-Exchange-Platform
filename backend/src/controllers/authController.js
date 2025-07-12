@@ -118,14 +118,29 @@ const login = async (req, res) => {
  */
 const getMe = async (req, res) => {
   try {
+    console.log('🔍 Getting user with ID:', req.user.id);
     const user = await User.findById(req.user.id).select('-password');
     if (!user) {
+      console.log('❌ User not found');
       return sendError(res, 404, 'User not found');
     }
 
-    return sendSuccess(res, 200, 'User retrieved successfully', { user });
+    // Format user response to match frontend expectations
+    const userResponse = {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      points: user.points,
+      isAdmin: user.is_admin,
+      avatarUrl: user.avatar_url,
+      bio: user.bio,
+      location: user.location
+    };
+
+    console.log('✅ User found:', userResponse);
+    return sendSuccess(res, 200, 'User retrieved successfully', { user: userResponse });
   } catch (error) {
-    console.error('Get user error:', error);
+    console.error('❌ Get user error:', error);
     return sendError(res, 500, 'Failed to get user');
   }
 };

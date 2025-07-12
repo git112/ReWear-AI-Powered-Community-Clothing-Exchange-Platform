@@ -19,7 +19,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { itemsAPI, swapsAPI } from '../services/api'
 import { LoadingSpinner } from '../components/ui/LoadingSpinner'
 import { toast } from 'react-hot-toast'
-import { getImageUrl, handleImageError } from '../utils/imageUtils'
+import { getImageUrl, handleImageError, ImageWithFallback } from '../utils/imageUtils.jsx'
 
 export const ItemDetailPage = () => {
   const { id } = useParams()
@@ -46,10 +46,19 @@ export const ItemDetailPage = () => {
         setLoading(true)
         console.log('Fetching item with ID:', id)
         const response = await itemsAPI.getById(id)
-        setItem(response.data.data)
+        if (response.data.success && response.data.data) {
+          console.log('Item data received:', response.data.data)
+          setItem(response.data.data)
+        } else {
+          toast.error('Item not found')
+        }
       } catch (error) {
         console.error('Error fetching item:', error)
-        toast.error('Failed to load item details')
+        if (error.response?.status === 404) {
+          toast.error('Item not found')
+        } else {
+          toast.error('Failed to load item details')
+        }
       } finally {
         setLoading(false)
       }
@@ -72,7 +81,13 @@ export const ItemDetailPage = () => {
 
     setRequesting(true)
     try {
-      await swapsAPI.create({ item_id: item.id })
+      console.log('Creating swap request for item ID:', id)
+      console.log('User ID:', user?.id)
+      
+      const swapData = { item_id: id }
+      console.log('Swap data being sent:', swapData)
+      
+      await swapsAPI.create(swapData)
       toast.success('Swap request sent successfully!')
       setShowSwapModal(false)
       // Refresh item data to update status
@@ -80,6 +95,7 @@ export const ItemDetailPage = () => {
       setItem(response.data.data)
     } catch (error) {
       console.error('Error requesting swap:', error)
+      console.error('Error response:', error.response?.data)
       toast.error(error.response?.data?.message || 'Failed to request swap')
     } finally {
       setRequesting(false)
@@ -167,18 +183,12 @@ export const ItemDetailPage = () => {
         >
           {/* Main Image */}
           <div className="relative aspect-square bg-earth-100 rounded-lg overflow-hidden">
-            {item.image_urls && item.image_urls[currentImageIndex] ? (
-              <img
-                src={getImageUrl(item.image_urls[currentImageIndex])}
-                alt={item.title}
-                className="w-full h-full object-cover"
-                onError={handleImageError}
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <Tag className="w-16 h-16 text-earth-300" />
-              </div>
-            )}
+            <ImageWithFallback
+              src={item.image_urls?.[currentImageIndex]}
+              alt={item.title}
+              className="w-full h-full object-cover"
+              fallbackIcon={<Tag className="w-16 h-16 text-earth-300" />}
+            />
             
             {/* Image Navigation */}
             {item.image_urls && item.image_urls.length > 1 && (
@@ -212,11 +222,10 @@ export const ItemDetailPage = () => {
                       : 'border-earth-200 hover:border-earth-300'
                   }`}
                 >
-                  <img
-                    src={getImageUrl(image)}
+                  <ImageWithFallback
+                    src={image}
                     alt={`${item.title} ${index + 1}`}
                     className="w-full h-full object-cover"
-                    onError={handleImageError}
                   />
                 </button>
               ))}

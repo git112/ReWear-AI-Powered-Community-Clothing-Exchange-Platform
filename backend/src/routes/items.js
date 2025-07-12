@@ -74,13 +74,30 @@ router.get('/user/:userId', async (req, res) => {
   }
 });
 
+// @route   GET /api/items/my-uploads
+// @desc    Get current user's uploaded items
+// @access  Private
+router.get('/my-uploads', verifyToken, async (req, res) => {
+  try {
+    const items = await Item.find({ user_id: req.user.id }).sort({ created_at: -1 });
+    res.json({ success: true, data: items });
+  } catch (error) {
+    console.error('Get my uploads error:', error);
+    res.status(500).json({ error: 'Failed to get my uploads', message: 'Internal server error' });
+  }
+});
+
 // @route   GET /api/items/:id
 // @desc    Get item by ID
 // @access  Public
 router.get('/:id', async (req, res) => {
   try {
+    console.log('Backend: Received request for item ID:', req.params.id);
+    console.log('Backend: ID type:', typeof req.params.id);
+    
     // Validate that the ID is not undefined and is a valid ObjectId
     if (!req.params.id || req.params.id === 'undefined') {
+      console.log('Backend: Invalid item ID - undefined or "undefined"');
       return res.status(400).json({ 
         success: false, 
         error: 'Invalid item ID',
@@ -88,6 +105,7 @@ router.get('/:id', async (req, res) => {
       });
     }
 
+    console.log('Backend: Attempting to find item with ID:', req.params.id);
     const item = await Item.findById(req.params.id);
     if (!item) {
       return res.status(404).json({ 
@@ -96,6 +114,7 @@ router.get('/:id', async (req, res) => {
         message: 'The requested item could not be found' 
       });
     }
+    console.log('Backend: Item found successfully, sending response');
     res.json({ success: true, data: item });
   } catch (error) {
     console.error('Get item by id error:', error);

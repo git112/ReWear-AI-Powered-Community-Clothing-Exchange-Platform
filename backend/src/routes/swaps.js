@@ -9,7 +9,9 @@ const router = express.Router();
 
 // Validation rules for swap creation
 const swapValidation = [
-  body('item_id').notEmpty().withMessage('Item ID is required'),
+  body('item_id')
+    .notEmpty().withMessage('Item ID is required')
+    .isMongoId().withMessage('Item ID must be a valid MongoDB ObjectId'),
   body('message').optional().isString()
 ];
 
@@ -35,6 +37,29 @@ router.get('/', verifyToken, async (req, res) => {
   }
 });
 
+// @route   GET /api/swaps/mine
+// @desc    Get current user's swaps (as requester or owner)
+// @access  Private
+router.get('/mine', verifyToken, async (req, res) => {
+  try {
+    const swaps = await Swap.find({
+      $or: [
+        { requester_id: req.user.id },
+        { owner_id: req.user.id }
+      ]
+    })
+    .populate('item_id', 'title image_urls category')
+    .populate('requester_id', 'name')
+    .populate('owner_id', 'name')
+    .sort({ created_at: -1 });
+    
+    res.json({ success: true, data: swaps });
+  } catch (error) {
+    console.error('Get my swaps error:', error);
+    res.status(500).json({ error: 'Failed to get my swaps', message: 'Internal server error' });
+  }
+});
+
 // @route   GET /api/swaps/:id
 // @desc    Get swap by ID
 // @access  Private
@@ -56,15 +81,25 @@ router.get('/:id', verifyToken, async (req, res) => {
 // @access  Private
 router.post('/', verifyToken, swapValidation, async (req, res) => {
   try {
+    console.log('Swap creation request body:', req.body);
+    console.log('User ID from token:', req.user.id);
+    
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log('Validation errors:', errors.array());
       return res.status(400).json({ error: 'Validation failed', details: errors.array() });
     }
     const { item_id, message } = req.body;
+    console.log('Item ID received:', item_id);
+    
     const item = await Item.findById(item_id);
+    console.log('Item found:', item ? 'Yes' : 'No');
     if (!item) {
       return res.status(404).json({ error: 'Item not found' });
     }
+    console.log('Item user ID:', item.user_id);
+    console.log('Requesting user ID:', req.user.id);
+    
     if (item.user_id.toString() === req.user.id) {
       return res.status(400).json({ error: 'You cannot request your own item' });
     }
@@ -74,6 +109,7 @@ router.post('/', verifyToken, swapValidation, async (req, res) => {
       owner_id: item.user_id,
       message
     });
+    console.log('Swap created successfully:', swap._id);
     res.status(201).json({ success: true, message: 'Swap request created', data: swap });
   } catch (error) {
     console.error('Create swap error:', error);

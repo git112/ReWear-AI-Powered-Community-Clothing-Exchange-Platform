@@ -40,6 +40,7 @@ export const authAPI = {
   login: (email, password) => api.post('/auth/login', { email, password }),
   register: (userData) => api.post('/auth/signup', userData),
   getCurrentUser: () => api.get('/auth/me'),
+  getProfile: () => api.get('/auth/me'),
   updateProfile: (profileData) => api.put('/auth/profile', profileData),
   changePassword: (currentPassword, newPassword) => 
     api.post('/auth/change-password', { currentPassword, newPassword }),
@@ -53,6 +54,7 @@ export const itemsAPI = {
   update: (id, itemData) => api.put(`/items/${id}`, itemData),
   delete: (id) => api.delete(`/items/${id}`),
   getByUser: (userId, params) => api.get(`/items/user/${userId}`, { params }),
+  getMyUploads: () => api.get('/items/my-uploads'),
 }
 
 // Swaps API
@@ -64,6 +66,7 @@ export const swapsAPI = {
   reject: (id) => api.put(`/swaps/${id}/reject`),
   complete: (id) => api.put(`/swaps/${id}/complete`),
   cancel: (id) => api.delete(`/swaps/${id}`),
+  getMine: () => api.get('/swaps/mine'),
 }
 
 // Users API

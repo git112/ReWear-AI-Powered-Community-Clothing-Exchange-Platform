@@ -190,6 +190,37 @@ router.get('/me', verifyToken, async (req, res) => {
   }
 });
 
+// @route   GET /api/auth/profile
+// @desc    Get current user profile (alias for /me)
+// @access  Private
+router.get('/profile', verifyToken, async (req, res) => {
+  try {
+    // req.user is set by verifyToken middleware
+    const user = await User.findById(req.user.id);
+    res.json({
+      success: true,
+      data: {
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          points: user.points,
+          isAdmin: user.is_admin,
+          avatarUrl: user.avatar_url,
+          bio: user.bio,
+          location: user.location
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Get profile error:', error);
+    res.status(500).json({
+      error: 'Failed to get profile',
+      message: 'Internal server error'
+    });
+  }
+});
+
 // @route   PUT /api/auth/profile
 // @desc    Update user profile
 // @access  Private

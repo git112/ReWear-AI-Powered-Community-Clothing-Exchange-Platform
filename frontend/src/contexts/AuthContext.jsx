@@ -22,15 +22,25 @@ export const AuthProvider = ({ children }) => {
   // Initialize auth state
   useEffect(() => {
     const initializeAuth = async () => {
+      console.log('🔐 Initializing auth state...')
+      console.log('Token exists:', !!token)
+      console.log('User exists:', !!user)
+      
       if (token && !user) {
         try {
+          console.log('🔄 Fetching current user...')
           const response = await authAPI.getCurrentUser()
+          console.log('✅ User data received:', response.data)
           setUser(response.data.data.user)
         } catch (error) {
-          console.error('Failed to get current user:', error)
+          console.error('❌ Failed to get current user:', error)
           localStorage.removeItem('token')
           setToken(null)
         }
+      } else if (!token) {
+        console.log('❌ No token found, user not authenticated')
+      } else {
+        console.log('✅ User already loaded')
       }
       setLoading(false)
     }
@@ -131,7 +141,14 @@ export const AuthProvider = ({ children }) => {
   const isAdmin = user?.isAdmin || false
 
   // Check if user is authenticated
-  const isAuthenticated = !loading && !!user
+  const isAuthenticated = !loading && !!user && !!token
+  
+  console.log('🔍 Auth state check:', {
+    loading,
+    hasUser: !!user,
+    hasToken: !!token,
+    isAuthenticated
+  })
 
   const refreshUser = async () => {
     try {

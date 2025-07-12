@@ -14,7 +14,7 @@ import {
 } from 'lucide-react'
 import { itemsAPI } from '../services/api'
 import { LoadingSpinner } from '../components/ui/LoadingSpinner'
-import { getFirstImage, handleImageError } from '../utils/imageUtils'
+import { getFirstImage, handleImageError, ImageWithFallback } from '../utils/imageUtils.jsx'
 
 export const BrowsePage = () => {
   const [items, setItems] = useState([])
@@ -66,6 +66,10 @@ export const BrowsePage = () => {
         console.log('API Response:', response.data)
         // Handle both old and new response structures
         const itemsData = response.data.data?.items || response.data.data || response.data || []
+        console.log('Items data:', itemsData)
+        if (itemsData.length > 0) {
+          console.log('First item structure:', itemsData[0])
+        }
         setItems(Array.isArray(itemsData) ? itemsData : [])
       } catch (error) {
         console.error('Error fetching items:', error)
@@ -253,7 +257,7 @@ export const BrowsePage = () => {
         <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6' : 'space-y-4'}>
           {sortedItems.map((item, index) => (
             <motion.div
-              key={item.id}
+              key={item._id || item.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
@@ -263,18 +267,12 @@ export const BrowsePage = () => {
                 <>
                   {/* Item Image */}
                   <div className="relative h-48 bg-earth-100 rounded-t-lg overflow-hidden">
-                    {item.image_urls && item.image_urls[0] ? (
-                      <img
-                        src={getFirstImage(item.image_urls)}
-                        alt={item.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        onError={handleImageError}
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <ShoppingBag className="w-12 h-12 text-earth-300" />
-                      </div>
-                    )}
+                    <ImageWithFallback
+                      src={item.image_urls?.[0]}
+                      alt={item.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      fallbackIcon={<ShoppingBag className="w-12 h-12 text-earth-300" />}
+                    />
                     <div className="absolute top-2 right-2">
                       <button className="p-2 bg-white/80 rounded-full hover:bg-white transition-colors">
                         <Heart size={16} className="text-earth-600" />
@@ -296,7 +294,7 @@ export const BrowsePage = () => {
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-earth-500">{item.category}</span>
                       <Link
-                        to={`/items/${item.id}`}
+                        to={`/items/${item._id || item.id}`}
                         className="btn btn-primary btn-sm"
                       >
                         <Eye size={16} className="mr-1" />
@@ -309,18 +307,12 @@ export const BrowsePage = () => {
                 <>
                   {/* List View Image */}
                   <div className="relative w-24 h-24 bg-earth-100 rounded-lg overflow-hidden flex-shrink-0">
-                    {item.image_urls && item.image_urls[0] ? (
-                      <img
-                        src={getFirstImage(item.image_urls)}
-                        alt={item.title}
-                        className="w-full h-full object-cover"
-                        onError={handleImageError}
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <ShoppingBag className="w-8 h-8 text-earth-300" />
-                      </div>
-                    )}
+                    <ImageWithFallback
+                      src={item.image_urls?.[0]}
+                      alt={item.title}
+                      className="w-full h-full object-cover"
+                      fallbackIcon={<ShoppingBag className="w-8 h-8 text-earth-300" />}
+                    />
                   </div>
 
                   {/* List View Details */}
@@ -348,7 +340,7 @@ export const BrowsePage = () => {
                         <span>{item.condition}</span>
                       </div>
                       <Link
-                        to={`/items/${item.id}`}
+                        to={`/items/${item._id || item.id}`}
                         className="btn btn-primary btn-sm"
                       >
                         <Eye size={16} className="mr-1" />
