@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import { itemsAPI } from '../services/api'
 import { LoadingSpinner } from '../components/ui/LoadingSpinner'
+import { getFirstImage, handleImageError } from '../utils/imageUtils'
 
 export const BrowsePage = () => {
   const [items, setItems] = useState([])
@@ -264,9 +265,10 @@ export const BrowsePage = () => {
                   <div className="relative h-48 bg-earth-100 rounded-t-lg overflow-hidden">
                     {item.image_urls && item.image_urls[0] ? (
                       <img
-                        src={item.image_urls[0]}
+                        src={getFirstImage(item.image_urls)}
                         alt={item.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        onError={handleImageError}
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
@@ -309,9 +311,10 @@ export const BrowsePage = () => {
                   <div className="relative w-24 h-24 bg-earth-100 rounded-lg overflow-hidden flex-shrink-0">
                     {item.image_urls && item.image_urls[0] ? (
                       <img
-                        src={item.image_urls[0]}
+                        src={getFirstImage(item.image_urls)}
                         alt={item.title}
                         className="w-full h-full object-cover"
+                        onError={handleImageError}
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">

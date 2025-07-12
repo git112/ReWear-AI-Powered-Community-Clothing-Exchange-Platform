@@ -160,6 +160,63 @@ router.post('/', verifyToken, upload.array('images', 5), itemValidation, async (
   }
 });
 
+// @route   POST /api/items/test-data
+// @desc    Create test items with placeholder images (for development only)
+// @access  Public
+router.post('/test-data', async (req, res) => {
+  try {
+    // Sample test items with placeholder images
+    const testItems = [
+      {
+        user_id: '507f1f77bcf86cd799439011', // Placeholder user ID
+        title: 'Vintage Denim Jacket',
+        description: 'Classic vintage denim jacket in excellent condition. Perfect for layering.',
+        category: 'outerwear',
+        size: 'm',
+        condition: 'good',
+        tags: ['vintage', 'denim', 'jacket'],
+        image_urls: ['/uploads/placeholder1.jpg'],
+        status: 'available',
+        points_required: 50
+      },
+      {
+        user_id: '507f1f77bcf86cd799439011',
+        title: 'Summer Floral Dress',
+        description: 'Beautiful floral print dress perfect for summer days.',
+        category: 'dresses',
+        size: 's',
+        condition: 'like-new',
+        tags: ['summer', 'floral', 'dress'],
+        image_urls: ['/uploads/placeholder2.jpg'],
+        status: 'available',
+        points_required: 75
+      },
+      {
+        user_id: '507f1f77bcf86cd799439011',
+        title: 'Classic White T-Shirt',
+        description: 'Essential white t-shirt made from organic cotton.',
+        category: 'tops',
+        size: 'l',
+        condition: 'new',
+        tags: ['basic', 'organic', 'cotton'],
+        image_urls: ['/uploads/placeholder3.jpg'],
+        status: 'available',
+        points_required: 25
+      }
+    ];
+
+    const createdItems = await Item.insertMany(testItems);
+    res.status(201).json({ 
+      success: true, 
+      message: 'Test items created successfully', 
+      data: createdItems 
+    });
+  } catch (error) {
+    console.error('Create test items error:', error);
+    res.status(500).json({ error: 'Failed to create test items', message: 'Internal server error' });
+  }
+});
+
 // @route   PUT /api/items/:id
 // @desc    Update an item
 // @access  Private (owner only)

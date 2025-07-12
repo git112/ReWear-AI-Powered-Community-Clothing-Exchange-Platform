@@ -19,6 +19,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { itemsAPI, swapsAPI } from '../services/api'
 import { LoadingSpinner } from '../components/ui/LoadingSpinner'
 import { toast } from 'react-hot-toast'
+import { getImageUrl, handleImageError } from '../utils/imageUtils'
 
 export const ItemDetailPage = () => {
   const { id } = useParams()
@@ -168,9 +169,10 @@ export const ItemDetailPage = () => {
           <div className="relative aspect-square bg-earth-100 rounded-lg overflow-hidden">
             {item.image_urls && item.image_urls[currentImageIndex] ? (
               <img
-                src={item.image_urls[currentImageIndex]}
+                src={getImageUrl(item.image_urls[currentImageIndex])}
                 alt={item.title}
                 className="w-full h-full object-cover"
+                onError={handleImageError}
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
@@ -211,9 +213,10 @@ export const ItemDetailPage = () => {
                   }`}
                 >
                   <img
-                    src={image}
+                    src={getImageUrl(image)}
                     alt={`${item.title} ${index + 1}`}
                     className="w-full h-full object-cover"
+                    onError={handleImageError}
                   />
                 </button>
               ))}
