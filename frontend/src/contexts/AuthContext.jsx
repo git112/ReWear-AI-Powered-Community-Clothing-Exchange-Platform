@@ -22,10 +22,10 @@ export const AuthProvider = ({ children }) => {
   // Initialize auth state
   useEffect(() => {
     const initializeAuth = async () => {
-      if (token) {
+      if (token && !user) {
         try {
           const response = await authAPI.getCurrentUser()
-          setUser(response.data.user)
+          setUser(response.data.data.user)
         } catch (error) {
           console.error('Failed to get current user:', error)
           localStorage.removeItem('token')
@@ -34,8 +34,8 @@ export const AuthProvider = ({ children }) => {
       }
       setLoading(false)
     }
-
     initializeAuth()
+    // eslint-disable-next-line
   }, [token])
 
   // Login function
@@ -131,7 +131,14 @@ export const AuthProvider = ({ children }) => {
   const isAdmin = user?.isAdmin || false
 
   // Check if user is authenticated
-  const isAuthenticated = !!user
+  const isAuthenticated = !loading && !!user
+
+  const refreshUser = async () => {
+    try {
+      const res = await authAPI.getCurrentUser();
+      setUser(res.data.data.user);
+    } catch (e) {}
+  };
 
   const value = {
     user,

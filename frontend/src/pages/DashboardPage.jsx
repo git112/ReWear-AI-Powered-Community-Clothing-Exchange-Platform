@@ -30,11 +30,12 @@ export const DashboardPage = () => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    if (!user?.id) return; // Don't fetch if user is not loaded
     const fetchDashboardData = async () => {
       try {
         setLoading(true)
         // Fetch user's items
-        const itemsResponse = await itemsAPI.getUserItems()
+        const itemsResponse = await itemsAPI.getByUser(user.id)
         const userItems = itemsResponse.data.data || []
         
         // Calculate stats
@@ -293,6 +294,7 @@ export const DashboardPage = () => {
         <h2 className="text-xl font-semibold text-earth-900 mb-4">Quick Actions</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Link
+            key="upload"
             to="/upload"
             className="card hover:shadow-sustainable-lg transition-all duration-200 group"
           >
@@ -304,6 +306,7 @@ export const DashboardPage = () => {
           </Link>
           
           <Link
+            key="browse"
             to="/browse"
             className="card hover:shadow-sustainable-lg transition-all duration-200 group"
           >
@@ -315,6 +318,7 @@ export const DashboardPage = () => {
           </Link>
           
           <Link
+            key="swaps"
             to="/swaps"
             className="card hover:shadow-sustainable-lg transition-all duration-200 group"
           >

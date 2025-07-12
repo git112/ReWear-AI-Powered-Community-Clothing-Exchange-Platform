@@ -33,9 +33,18 @@ export const ItemDetailPage = () => {
 
   useEffect(() => {
     const fetchItem = async () => {
+      // Add validation to prevent fetching with undefined ID
+      if (!id || id === 'undefined') {
+        console.error('Invalid item ID:', id)
+        toast.error('Invalid item ID')
+        setLoading(false)
+        return
+      }
+
       try {
         setLoading(true)
-        const response = await itemsAPI.getItem(id)
+        console.log('Fetching item with ID:', id)
+        const response = await itemsAPI.getById(id)
         setItem(response.data.data)
       } catch (error) {
         console.error('Error fetching item:', error)
@@ -62,11 +71,11 @@ export const ItemDetailPage = () => {
 
     setRequesting(true)
     try {
-      await swapsAPI.requestSwap(item.id)
+      await swapsAPI.create({ item_id: item.id })
       toast.success('Swap request sent successfully!')
       setShowSwapModal(false)
       // Refresh item data to update status
-      const response = await itemsAPI.getItem(id)
+      const response = await itemsAPI.getById(id)
       setItem(response.data.data)
     } catch (error) {
       console.error('Error requesting swap:', error)

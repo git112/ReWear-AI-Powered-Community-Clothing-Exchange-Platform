@@ -61,10 +61,14 @@ export const BrowsePage = () => {
     const fetchItems = async () => {
       try {
         setLoading(true)
-        const response = await itemsAPI.getAllItems()
-        setItems(response.data.data || [])
+        const response = await itemsAPI.getAll()
+        console.log('API Response:', response.data)
+        // Handle both old and new response structures
+        const itemsData = response.data.data?.items || response.data.data || response.data || []
+        setItems(Array.isArray(itemsData) ? itemsData : [])
       } catch (error) {
         console.error('Error fetching items:', error)
+        setItems([])
       } finally {
         setLoading(false)
       }
@@ -73,14 +77,14 @@ export const BrowsePage = () => {
     fetchItems()
   }, [])
 
-  const filteredItems = items.filter(item => {
-    const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  const filteredItems = Array.isArray(items) ? items.filter(item => {
+    const matchesSearch = item.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          item.description?.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesCategory = filters.category === 'all' || item.category === filters.category
     const matchesSize = filters.size === 'all' || item.size === filters.size
     
     return matchesSearch && matchesCategory && matchesSize
-  })
+  }) : []
 
   const sortedItems = [...filteredItems].sort((a, b) => {
     switch (sortBy) {

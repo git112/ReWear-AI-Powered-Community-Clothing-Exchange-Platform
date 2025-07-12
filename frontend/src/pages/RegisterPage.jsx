@@ -10,7 +10,9 @@ import { useAuth } from '../contexts/AuthContext'
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Please enter a valid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  password: z.string()
+    .min(6, 'Password must be at least 6 characters')
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, 'Password must contain at least one uppercase letter, one lowercase letter, and one number'),
   confirmPassword: z.string()
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
@@ -38,7 +40,11 @@ export const RegisterPage = () => {
   const onSubmit = async (data) => {
     setIsLoading(true)
     try {
-      const result = await registerUser(data.name, data.email, data.password)
+      const result = await registerUser({
+        name: data.name,
+        email: data.email,
+        password: data.password
+      })
       if (result.success) {
         navigate(from, { replace: true })
       }
@@ -150,6 +156,9 @@ export const RegisterPage = () => {
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
+              <p className="mt-1 text-sm text-earth-500">
+                Password must be at least 6 characters with uppercase, lowercase, and number
+              </p>
               {errors.password && (
                 <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
               )}

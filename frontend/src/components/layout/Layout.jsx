@@ -46,7 +46,7 @@ export const Layout = ({ children }) => {
       
       <Navigation />
       
-      <main className="relative z-10">
+      <main className="relative z-10 pt-16">
         <AnimatePresence mode="wait">
           <motion.div
             key={location.pathname}

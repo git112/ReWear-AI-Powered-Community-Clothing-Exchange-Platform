@@ -89,7 +89,7 @@ export const UploadItemPage = () => {
         formData.append('images', image.file)
       })
 
-      const response = await itemsAPI.createItem(formData)
+      const response = await itemsAPI.create(formData)
       
       toast.success('Item uploaded successfully!')
       navigate(`/items/${response.data.data.id}`)
